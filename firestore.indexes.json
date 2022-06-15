@@ -1,0 +1,19 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "survey_comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "site_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "time_written",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
