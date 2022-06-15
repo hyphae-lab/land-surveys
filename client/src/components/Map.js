@@ -58,12 +58,15 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
                 ]
             }
         });
+
+        // need a separate layer for text, as some polygons are "multi-polygons"
+        //   so Mapbox adds a label for each sub-polygon of the multi-polygon (duplicating)
         map.current.addLayer({
             id: layerId+'__text',
             type: 'symbol',
             source: layerId+'__centers',
             layout: {
-                'text-field': ["concat", ["to-string", ["get", "name"]], ' (', ["to-string", ["get", "comment_count"]], ')'],
+                'text-field': ["to-string", ["get", "name"]],
                 'text-anchor': 'bottom-right',
                 'text-radial-offset': 1
             },
@@ -106,19 +109,18 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
                 properties: {
                     id: site.id,
                     name: site.name,
-                    comment_count: site.comment_count ? parseInt(site.comment_count) : 0
                 },
                 geometry: {
                     type: "MultiPolygon",
                     coordinates: JSON.parse(site.coordinates)
                 }
             });
+
             sitesGeoDataCenters.features.push({
                 type: "Feature",
                 properties: {
                     id: site.id,
                     name: site.name,
-                    comment_count: site.comment_count ? parseInt(site.comment_count) : 0
                 },
                 geometry: {
                     type: "Point",
