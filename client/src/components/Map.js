@@ -10,7 +10,7 @@ import {makePromiseFactory as makePromise} from "../helpers";
 
 const mapLoadedPromise = makePromise();
 
-const Map = ({sites, onSiteSelected}) => {
+const Map = ({sites, onSiteSelected, onMapMove}) => {
     const map = useRef(null);
     const container = useRef(null);
 
@@ -163,6 +163,22 @@ const Map = ({sites, onSiteSelected}) => {
         mapLoadedPromise.resolve(true);
     };
 
+    const [dragStart, setDragStart] = useState(null);
+    const [dragEnd, setDragEnd] = useState(null);
+    const handleMapDragStart = (e) => {
+        setDragStart({x: e.originalEvent.x, y: e.originalEvent.y});
+    };
+    const handleMapDragEnd = (e) => {
+        setDragEnd({x: e.originalEvent.x, y: e.originalEvent.y});
+    };
+    useEffect(() => {
+        if (!dragStart) {
+            return;
+        }
+        const dragDelta = {x: dragStart.x - dragEnd.x, y: dragStart.y - dragEnd.y};
+        onMapMove(dragDelta);
+    }, [dragEnd]);
+
     useEffect(() => {
         if (!map.current) {
             map.current = new mapboxgl.Map({
@@ -171,6 +187,8 @@ const Map = ({sites, onSiteSelected}) => {
             });
             map.current.on('load', handleMapLoad);
             map.current.on('click', handleMapClick);
+            map.current.on('dragstart', handleMapDragStart);
+            map.current.on('dragend', handleMapDragEnd);
         }
 
         return () => {
@@ -178,6 +196,8 @@ const Map = ({sites, onSiteSelected}) => {
                 mapLoadedPromise.reject(false);
                 map.current.off('load', handleMapLoad);
                 map.current.off('click', handleMapClick);
+                map.current.off('dragstart', handleMapDragStart);
+                map.current.off('dragend', handleMapDragEnd);
             }
         };
     }, []);

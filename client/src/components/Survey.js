@@ -27,6 +27,7 @@ const Survey = () => {
     const [currentSite, setCurrentSite] = useState(false);
     const [currentSiteComments, setCurrentSiteComments] = useState(false);
     const [currentSiteClickPosition, setCurrentSiteClickPosition] = useState(false);
+    const [currentSiteClickPositionDelta, setCurrentSiteClickPositionDelta] = useState(false);
 
     const getSitesAndComments = () => {
         setLoading(true);
@@ -99,6 +100,16 @@ const Survey = () => {
         }
     };
 
+    const handleMapMoved = (delta) => {
+        setCurrentSiteClickPositionDelta(delta);
+    };
+
+    useEffect(() => {
+        if (currentSite) {
+            setCurrentSiteClickPosition({x: currentSiteClickPosition.x - currentSiteClickPositionDelta.x, y: currentSiteClickPosition.y - currentSiteClickPositionDelta.y});
+        }
+    }, [currentSiteClickPositionDelta]);
+
     const handleCommentAdded = comment => {
         // update comment_count for site
         sites[comment.site_id].comment_count++;
@@ -127,10 +138,11 @@ const Survey = () => {
         {isLoading && <div className='spinning-loader'></div>}
         {!!error && <div>{error}</div>}
         <div style={{width: '90%', height: '90vh', position: 'relative'}}>
-            {sites && <Map sites={sites} onSiteSelected={handleSiteSelected} />}
+            {sites && <Map sites={sites} onSiteSelected={handleSiteSelected} onMapMove={handleMapMoved} />}
             {currentSite &&
                 <div style={{
                     position: 'absolute', backgroundColor: 'white', border: '1px solid grey',
+                    maxHeight: '65%', overflowY: 'scroll',
                     top: (currentSiteClickPosition.y*1.1)+'px', left: currentSiteClickPosition.x+'px'
                 }}>
                     <Comments site={currentSite} comments={currentSiteComments} onCommentAdded={handleCommentAdded} onCommentRemoved={handleCommentRemoved}/>
