@@ -36,7 +36,7 @@ const App = () => {
     }, []);
     return <FirebaseContext.Provider value={firebaseApp}>
         <div className='app'>
-            <h1>Sensor Networks Dashboard</h1>
+            <h1>Opportunities for Green Infrastructure and Urban Greening in Bay Pointd</h1>
             <main>
                 <Survey />
             </main>
