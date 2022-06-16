@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useRef} from 'react';
 import mapboxgl from "mapbox-gl";
+import '../../node_modules/mapbox-gl/src/css/mapbox-gl.css';
 
 import { mapboxToken } from '../../keys/mapbox';
 mapboxgl.accessToken = mapboxToken;
@@ -202,6 +203,7 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
         const features = map.current.queryRenderedFeatures(pointWithBuffer, {layers: [layerId, layerId+'__custom']});
 
         map.current.removeFeatureState({source: layerId});
+        map.current.removeFeatureState({source: layerId+'__custom'});
         map.current.removeFeatureState({source: layerId+'__centers'});
 
         if (features.length) {
@@ -210,7 +212,7 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
             map.current.setFeatureState({id: newCurrentSiteId, source: layerId+'__centers'}, {focus: true});
             onSiteSelected(newCurrentSiteId, e.point);
         } else {
-            onSiteSelected(false);
+            onSiteSelected('new', e.point, map.current.unproject(e.point));
         }
     };
 
