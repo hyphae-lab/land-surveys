@@ -92,6 +92,12 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
         });
     };
 
+    useEffect(() => {
+        if (sites && Object.keys(sites).length) {
+            mapLoadedPromise.promise.then(addSitesLayerData);
+        }
+    }, [sites]);
+
     const addSitesLayerData = () => {
         const sitesGeoData = {
             type: "FeatureCollection",
@@ -133,12 +139,6 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
         map.current.getSource(layerId+'__centers').setData(sitesGeoDataCenters);
     }
 
-    useEffect(() => {
-        if (sites && Object.keys(sites).length) {
-            mapLoadedPromise.promise.then(addSitesLayerData);
-        }
-    }, [sites]);
-
     const handleMapClick = e => {
         const bufferAroundClick = 2;
         const pointWithBuffer = [
@@ -160,11 +160,6 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
         }
     };
 
-    const handleMapLoad = () => {
-        addSitesMapLayer();
-        mapLoadedPromise.resolve(true);
-    };
-
     const [dragStart, setDragStart] = useState(null);
     const [dragEnd, setDragEnd] = useState(null);
     const handleMapDragStart = (e) => {
@@ -180,6 +175,12 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
         const dragDelta = {x: dragStart.x - dragEnd.x, y: dragStart.y - dragEnd.y};
         onMapMove(dragDelta);
     }, [dragEnd]);
+
+
+    const handleMapLoad = () => {
+        addSitesMapLayer();
+        mapLoadedPromise.resolve(true);
+    };
 
     useEffect(() => {
         if (!map.current) {
