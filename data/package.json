@@ -1,0 +1,24 @@
+{
+  "name": "hyphae-land-surveys--data-conversion",
+  "version": "1.0.0",
+  "description": "land location-based surveys/questionnaires",
+  "main": "index.js",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyphae-lab/land-surveys.git"
+  },
+  "author": "Ivan Velev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hyphae-lab/land-surveys/issues"
+  },
+  "type": "module",
+  "homepage": "https://github.com/hyphae-lab/land-surveys#readme",
+  "dependencies": {
+    "@turf/turf": "^6.5.0"
+  },
+  "devDependencies": {
+  }
+}
