@@ -8,7 +8,7 @@ module.exports = {
     EDIT: may eventally get rid of all the test files, but might be better to have different build commands to build different tests instead of build all in one command in the long run
   */
   entry: {
-    'survey':  { import: `${SRC_DIR}/index.jsx`, filename: `survey.bundle.js` },
+    'eccg-survey':  { import: `${SRC_DIR}/index.jsx`, filename: `eccgi-survey.bundle.js` },
   },
   output: {
     path: DIST_DIR
