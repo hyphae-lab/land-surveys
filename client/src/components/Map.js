@@ -32,6 +32,14 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
             },
             promoteId: 'id'
         });
+        map.current.addSource(layerId+'__custom', {
+            type: 'geojson',
+            data: {
+                type: "FeatureCollection",
+                features: []
+            },
+            promoteId: 'id'
+        });
 
         map.current.addLayer({
             id: layerId,
@@ -56,6 +64,33 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
                     0.7,
                     0.3
                 ]
+            }
+        });
+
+        map.current.addLayer({
+            id: layerId+'__custom',
+            type: 'circle',
+            source: layerId+'__custom',
+            paint: {
+                'circle-stroke-color': [
+                    'case',
+                    ['boolean', ['feature-state', 'focus'], false],
+                    'black',
+                    'blue'
+                ],
+                'circle-color':  [
+                    'case',
+                    ['boolean', ['feature-state', 'focus'], false],
+                    'red',
+                    'magenta'
+                ],
+                'circle-opacity': [
+                    'case',
+                    ['boolean', ['feature-state', 'focus'], false],
+                    0.7,
+                    0.3
+                ],
+                'circle-radius': 10
             }
         });
 
@@ -99,30 +134,48 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
     }, [sites]);
 
     const addSitesLayerData = () => {
-        const sitesGeoData = {
+        const sitesData = {
             type: "FeatureCollection",
             features: []
         };
-        const sitesGeoDataCenters = {
+        const sitesDataCustom = {
+            type: "FeatureCollection",
+            features: []
+        };
+        const sitesDataCenters = {
             type: "FeatureCollection",
             features: []
         };
 
         Object.values(sites).forEach(site => {
             //console.log(site.id, site.name, turfCenter(turfPolygon(JSON.parse(site.coordinates)[0])));
-            sitesGeoData.features.push({
-                type: "Feature",
-                properties: {
-                    id: site.id,
-                    name: site.name,
-                },
-                geometry: {
-                    type: "MultiPolygon",
-                    coordinates: JSON.parse(site.coordinates)
-                }
-            });
+            if (!!site.is_user_defined) {
+                sitesDataCustom.features.push({
+                    type: "Feature",
+                    properties: {
+                        id: site.id,
+                        name: site.name,
+                    },
+                    geometry: {
+                        type: "Point",
+                        coordinates: JSON.parse(site.center)
+                    }
+                });
+            } else {
+                sitesData.features.push({
+                    type: "Feature",
+                    properties: {
+                        id: site.id,
+                        name: site.name,
+                    },
+                    geometry: {
+                        type: "MultiPolygon",
+                        coordinates: JSON.parse(site.coordinates)
+                    }
+                });
+            }
 
-            sitesGeoDataCenters.features.push({
+            sitesDataCenters.features.push({
                 type: "Feature",
                 properties: {
                     id: site.id,
@@ -135,8 +188,9 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
             });
         });
 
-        map.current.getSource(layerId).setData(sitesGeoData);
-        map.current.getSource(layerId+'__centers').setData(sitesGeoDataCenters);
+        map.current.getSource(layerId).setData(sitesData);
+        map.current.getSource(layerId+'__custom').setData(sitesDataCustom);
+        map.current.getSource(layerId+'__centers').setData(sitesDataCenters);
     }
 
     const handleMapClick = e => {
@@ -145,14 +199,14 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
             [e.point.x - bufferAroundClick, e.point.y - bufferAroundClick],
             [e.point.x + bufferAroundClick, e.point.y + bufferAroundClick]
         ];
-        const features = map.current.queryRenderedFeatures(pointWithBuffer, {layers: [layerId]});
+        const features = map.current.queryRenderedFeatures(pointWithBuffer, {layers: [layerId, layerId+'__custom']});
 
         map.current.removeFeatureState({source: layerId});
         map.current.removeFeatureState({source: layerId+'__centers'});
 
         if (features.length) {
             const newCurrentSiteId = features[0].id;
-            map.current.setFeatureState({id: newCurrentSiteId, source: layerId}, {focus: true});
+            map.current.setFeatureState({id: newCurrentSiteId, source: features[0].source}, {focus: true});
             map.current.setFeatureState({id: newCurrentSiteId, source: layerId+'__centers'}, {focus: true});
             onSiteSelected(newCurrentSiteId, e.point);
         } else {
