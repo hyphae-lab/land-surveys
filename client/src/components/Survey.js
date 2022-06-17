@@ -2,6 +2,8 @@ import React, { useRef, useState, useEffect, useContext } from 'react';
 import Map from "./Map";
 import Comments from "./Comments";
 import NewSite from "./NewSite";
+// import ImportData from "./dev/ImportData"; // dev
+import ImportData from "./dev/Empty"; // prod
 
 import {FirebaseContext} from "./firebaseContext";
 import {
@@ -16,11 +18,21 @@ import {
     where
 } from 'firebase/firestore';
 
+import {onAuthStateChanged} from "firebase/auth";
+
 const surveySitesCollection = 'survey_sites';
 const surveyCommentsCollection = 'survey_comments';
 
 const Survey = () => {
     const firebaseApp = useContext(FirebaseContext);
+
+    const [authUser, setAuthUser] = useState(null);
+    useEffect(() => {
+        // returning the unsubscribe function for "unmount" handler to run when unmoutingin component
+        return onAuthStateChanged(firebaseApp.auth, user => {
+            setAuthUser(user);
+        });
+    }, []);
 
     const [isLoading, setLoading] = useState(false);
     const [sites, setSites] = useState(null);
@@ -165,6 +177,7 @@ const Survey = () => {
     return <div>
         {isLoading && <div className='spinning-loader'></div>}
         {!!error && <div>{error}</div>}
+        {firebaseApp.showAuth && authUser && <ImportData />}
         <div style={{width: '90%', height: '90vh', position: 'relative'}}>
             {sites && <Map sites={sites} onSiteSelected={handleSiteSelected} onMapMove={handleMapMoved} />}
             {currentSite && !isCurrentSitenew &&

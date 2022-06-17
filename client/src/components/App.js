@@ -1,17 +1,20 @@
 import React, {useState, useEffect, useRef} from 'react';
+import envType from '../../keys/env';
 
 import {FirebaseContext} from "./firebaseContext";
 import {initializeApp} from "firebase/app";
-import {getAuth, onAuthStateChanged} from "firebase/auth";
+import {getAuth} from "firebase/auth";
 import {getFirestore} from 'firebase/firestore';
 import firebaseConfig from "../../keys/firebase-config";
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-//import {connectFirestoreEmulator } from 'firebase/firestore';
-//connectFirestoreEmulator(db, 'localhost', 8080);
 const db = getFirestore(app);
-const firebaseApp = {db, auth};
+
+const firebaseApp = {db, auth, showAuth: window.location.search.indexOf('admin') >= 0, env: envType};
+
+// import firebaseDevSetup from "./dev/firebaseDevSetup"; // dev
+import firebaseDevSetup from "./dev/emptyFn"; // prod
+firebaseDevSetup(firebaseApp);
 
 import Survey from './Survey';
 import AuthUI from "./AuthUI";
@@ -19,24 +22,10 @@ import AuthUI from "./AuthUI";
 import './style.css';
 
 const App = () => {
-    const [authUser, setAuthUser] = useState(null);
-
-    useEffect(() => {
-        return onAuthStateChanged(auth, user => {
-            // Check for user status
-            setAuthUser(user);
-        });
-    }, []);
-
-    useEffect(() => {
-        return onAuthStateChanged(auth, user => {
-            // Check for user status
-            setAuthUser(user);
-        });
-    }, []);
+    const [showAuth] = useState(firebaseApp.showAuth);
     return <FirebaseContext.Provider value={firebaseApp}>
         <div className='app'>
-            <h1>Opportunities for Green Infrastructure and Urban Greening in Bay Point</h1>
+            {showAuth && <AuthUI />}
             <main>
                 <Survey />
             </main>
