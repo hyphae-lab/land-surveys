@@ -1,7 +1,7 @@
 import fs from 'fs';
 import {centerOfMass, polygon} from '@turf/turf';
 
-const data = fs.readFile('eccgi_sites_survey.geojson', 'utf-8', (error, json)=>{
+const data = fs.readFile('eccgi/sites_survey.geojson', 'utf-8', (error, json)=>{
     if (error) {
         return console.log('error', error);
     }
