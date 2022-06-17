@@ -81,6 +81,7 @@ const Comments = ({site, comments, onCommentAdded, onCommentRemoved}) => {
     }
 
     return <div>
+        <h3>{site.name} Comments</h3>
         {!comments || !comments.length ?
             <div>no comments</div> :
             comments.map(comment => <div key={comment.id}>
@@ -90,10 +91,10 @@ const Comments = ({site, comments, onCommentAdded, onCommentRemoved}) => {
         }
         {!isAddNew ?
             <div>
-                <button type='button' className='link' onClick={handleAddNewClick}>add new</button>
+                <button type='button' className='link' onClick={handleAddNewClick}>add commment</button>
             </div> :
             <div>
-                <h3>New Comment</h3>
+                <h4>New Comment</h4>
                 <textarea ref={commentRef}></textarea><br/>
                 <button type='button' className='link' onClick={handleSaveNewClick}>save</button>
                 <button type='button' className='link' onClick={handleCancelNewClick}>cancel</button>
