@@ -2,8 +2,8 @@ import React, { useRef, useState, useEffect, useContext } from 'react';
 import Map from "./Map";
 import Comments from "./Comments";
 import NewSite from "./NewSite";
-// import ImportData from "./dev/ImportData"; // dev
-import ImportData from "./dev/Empty"; // prod
+import ImportData from "./dev/ImportData"; // dev
+// import ImportData from "./dev/Empty"; // prod
 
 import {FirebaseContext} from "./firebaseContext";
 import {
@@ -179,7 +179,7 @@ const Survey = () => {
         {!!error && <div>{error}</div>}
         {firebaseApp.showAuth && authUser && <ImportData />}
         <div style={{width: '90%', height: '90vh', position: 'relative'}}>
-            {sites && <Map sites={sites} onSiteSelected={handleSiteSelected} onMapMove={handleMapMoved} />}
+            {sites && <Map sites={sites} onSiteSelected={handleSiteSelected} onMapMove={handleMapMoved} onNewSiteCancel={cancelNewSite}/>}
             {currentSite && !isCurrentSitenew &&
                 <div style={{
                     position: 'absolute', backgroundColor: 'white', border: '1px solid grey',

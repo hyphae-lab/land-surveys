@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import mapboxgl from "mapbox-gl";
 import '../../node_modules/mapbox-gl/src/css/mapbox-gl.css';
-
+import './mapbox.css';
 import { mapboxToken } from '../../keys/mapbox';
 mapboxgl.accessToken = mapboxToken;
 
@@ -11,7 +11,7 @@ import {makePromiseFactory as makePromise} from "../helpers";
 
 const mapLoadedPromise = makePromise();
 
-const Map = ({sites, onSiteSelected, onMapMove}) => {
+const Map = ({sites, onSiteSelected, onMapMove, onNewSiteCancel}) => {
     const map = useRef(null);
     const container = useRef(null);
 
@@ -194,11 +194,20 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
         map.current.getSource(layerId+'__centers').setData(sitesDataCenters);
     }
 
-    const handleMapClick = e => {
+    const [mapClickEvent, setMapClickEvent] = useState(null);
+    const handleMapClickWrapper = e => {
+        setMapClickEvent(e);
+    };
+
+    useEffect(() => { handleMapClick(); }, [mapClickEvent]);
+    const handleMapClick = () => {
+        if (!mapClickEvent) {
+            return;
+        }
         const bufferAroundClick = 2;
         const pointWithBuffer = [
-            [e.point.x - bufferAroundClick, e.point.y - bufferAroundClick],
-            [e.point.x + bufferAroundClick, e.point.y + bufferAroundClick]
+            [mapClickEvent.point.x - bufferAroundClick, mapClickEvent.point.y - bufferAroundClick],
+            [mapClickEvent.point.x + bufferAroundClick, mapClickEvent.point.y + bufferAroundClick]
         ];
         const features = map.current.queryRenderedFeatures(pointWithBuffer, {layers: [layerId, layerId+'__custom']});
 
@@ -210,9 +219,13 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
             const newCurrentSiteId = features[0].id;
             map.current.setFeatureState({id: newCurrentSiteId, source: features[0].source}, {focus: true});
             map.current.setFeatureState({id: newCurrentSiteId, source: layerId+'__centers'}, {focus: true});
-            onSiteSelected(newCurrentSiteId, e.point);
+            onSiteSelected(newCurrentSiteId, mapClickEvent.point);
         } else {
-            onSiteSelected('new', e.point, map.current.unproject(e.point));
+            if (isAddNewMode) {
+                onSiteSelected('new', mapClickEvent.point, map.current.unproject(mapClickEvent.point));
+            } else {
+                onSiteSelected(false);
+            }
         }
     };
 
@@ -232,6 +245,14 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
         onMapMove(dragDelta);
     }, [dragEnd]);
 
+    const [isAddNewMode, setAddNewMode] = useState(false);
+    const handleAddNewSite = () => {
+        // old state is ON => about to become OFF
+        if (isAddNewMode) {
+            onNewSiteCancel();
+        }
+        setAddNewMode(state => !state);
+    };
 
     const handleMapLoad = () => {
         addSitesMapLayer();
@@ -245,7 +266,7 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
                 style: 'mapbox://styles/hyphae-lab/cl4ekvfdg000015npvrzwo7fu'
             });
             map.current.on('load', handleMapLoad);
-            map.current.on('click', handleMapClick);
+            map.current.on('click', handleMapClickWrapper);
             map.current.on('dragstart', handleMapDragStart);
             map.current.on('dragend', handleMapDragEnd);
         }
@@ -254,14 +275,17 @@ const Map = ({sites, onSiteSelected, onMapMove}) => {
             if (map.current) {
                 mapLoadedPromise.reject(false);
                 map.current.off('load', handleMapLoad);
-                map.current.off('click', handleMapClick);
+                map.current.off('click', handleMapClickWrapper);
                 map.current.off('dragstart', handleMapDragStart);
                 map.current.off('dragend', handleMapDragEnd);
             }
         };
     }, []);
 
-    return (<div ref={container} className="map-container" style={{width: '100%', height: '100%'}}></div>);
+    return (<div style={{width: '100%', height: '100%'}}>
+        <div style={{position: 'absolute', top: 5, left: 5, zIndex: 1000}}><button type={'button'} onClick={handleAddNewSite} className={'link'}>{isAddNewMode ? '(x) cancel new site':'(+) add new site'}</button></div>
+        <div ref={container} className={'map-container '+(isAddNewMode ? 'is-add-new-feature-mode':'')} style={{width: '100%', height: '100%'}}></div>
+    </div>);
 };
 
 export default Map;

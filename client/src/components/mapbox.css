@@ -5,3 +5,7 @@
 .mapboxgl-compact {
     display: none;
 }
+
+.map-container.is-add-new-feature-mode .mapboxgl-canvas-container.mapboxgl-interactive {
+    cursor: crosshair;
+}

@@ -58,6 +58,13 @@ button.link:focus, .button-link:focus {
     top: 1px;
     border: 1px solid grey;
 }
+button.link.focus, .button-link.focus {
+    position: relative;
+    background-color: lightgrey;
+    border-radius: 5px;
+    top: 1px;
+    border: 1px solid grey;
+}
 
 .projects {
 
@@ -96,12 +103,4 @@ button.link:focus, .button-link:focus {
     to {
         transform: rotateZ(360deg);
     }
-}
-
-.mapboxgl-ctrl-top-left,
-.mapboxgl-ctrl-top-right,
-.mapboxgl-ctrl-bottom-left,
-.mapboxgl-ctrl-bottom-right,
-.mapboxgl-compact {
-    display: none;
 }
