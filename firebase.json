@@ -25,6 +25,10 @@
       "**/node_modules/**"
     ],
     "redirects": [{
+      "source": "/",
+      "destination": "/sites-survey.html",
+      "type": 302
+      },{
       "source": "/index.html",
       "destination": "/sites-survey.html",
       "type": 302
