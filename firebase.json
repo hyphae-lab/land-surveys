@@ -25,23 +25,23 @@
       "**/node_modules/**"
     ],
     "redirects": [{
-      "source": "/",
+      "source": "/zz",
       "destination": "/sites-survey.html",
       "type": 302
       },{
-      "source": "/index.html",
+      "source": "/zzindex.html",
       "destination": "/sites-survey.html",
       "type": 302
       },{
-      "source": "/map.html",
+      "source": "/zzmap.html",
       "destination": "/sites-survey.html",
       "type": 302
       },{
-      "source": "/_index.html",
+      "source": "/zz_index.html",
       "destination": "/index.html",
       "type": 302
       },{
-      "source": "/_map.html",
+      "source": "/zz_map.html",
       "destination": "/map.html",
       "type": 302
     }]
