@@ -23,6 +23,23 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ]
+    ],
+    "redirects": [{
+      "source": "/index.html",
+      "destination": "/sites-survey.html",
+      "type": 302
+      },{
+      "source": "/map.html",
+      "destination": "/sites-survey.html",
+      "type": 302
+      },{
+      "source": "/_index.html",
+      "destination": "/index.html",
+      "type": 302
+      },{
+      "source": "/_map.html",
+      "destination": "/map.html",
+      "type": 302
+    }]
   }
 }
