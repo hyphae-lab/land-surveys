@@ -2,6 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import mapboxgl from "mapbox-gl";
 import '../../node_modules/mapbox-gl/src/css/mapbox-gl.css';
 import './mapbox.css';
+import {makeRectangleBuffer} from '../mapboxHelpers';
 import { mapboxToken } from '../../keys/mapbox';
 mapboxgl.accessToken = mapboxToken;
 
@@ -17,6 +18,20 @@ const Map = ({sites, onSiteSelected, onMapMove, onNewSiteCancel}) => {
 
     const layerId = 'sites_from_db';
     const addSitesMapLayer = () => {
+        // map.current.addSource('tmphilite', {
+        //     type: 'geojson',
+        //     data: {
+        //         type: "FeatureCollection",
+        //         features: []
+        //     },
+        //     promoteId: 'id'
+        // });
+        // map.current.addLayer({
+        //     id: 'tmphilite',
+        //     type: 'line',
+        //     source: 'tmphilite',
+        // });
+
         map.current.addSource(layerId, {
             type: 'geojson',
             data: {
@@ -205,10 +220,22 @@ const Map = ({sites, onSiteSelected, onMapMove, onNewSiteCancel}) => {
             return;
         }
         const bufferAroundClick = 2;
-        const pointWithBuffer = [
-            [mapClickEvent.point.x - bufferAroundClick, mapClickEvent.point.y - bufferAroundClick],
-            [mapClickEvent.point.x + bufferAroundClick, mapClickEvent.point.y + bufferAroundClick]
-        ];
+        const pointWithBuffer = makeRectangleBuffer(map.current, mapClickEvent.point, bufferAroundClick, false, true);
+
+        // TEST the click hotspot by adding the precise rectangular buffer to see where the actual click is
+        // const rectBuffer = makeRectangleBuffer(map.current, mapClickEvent.point, bufferAroundClick, true, false);
+        // map.current.getSource('tmphilite').setData({
+        //     type: "FeatureCollection",
+        //     features: [{
+        //         type: 'Feature',
+        //         properties: {},
+        //         geometry: {
+        //             type: 'Polygon',
+        //             coordinates: [rectBuffer]
+        //         }
+        //     }]
+        // });
+
         const features = map.current.queryRenderedFeatures(pointWithBuffer, {layers: [layerId, layerId+'__custom']});
 
         map.current.removeFeatureState({source: layerId});

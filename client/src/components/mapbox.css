@@ -7,5 +7,5 @@
 }
 
 .map-container.is-add-new-feature-mode .mapboxgl-canvas-container.mapboxgl-interactive {
-    cursor: crosshair;
+    cursor: nw-resize; /* the only cursor which points precisely to the ACTUAL CLICK HOT-SPOT of the mouse click */
 }
