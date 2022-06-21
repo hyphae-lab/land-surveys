@@ -1,8 +1,8 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useRef} from 'react';
 
 const surveyCommentsCollection = 'survey_comments';
 
-const NewSite = ({add, cancel, site}) => {
+const NewSite = ({add, restart, cancel, site}) => {
     const nameRef = useRef(null);
     const handleSaveClick = () => {
         add({
@@ -16,10 +16,15 @@ const NewSite = ({add, cancel, site}) => {
         cancel();
     };
 
+    const handleRestartClick = () => {
+        restart();
+    };
+
     return <div>
         <h3>New Site</h3>
         <input ref={nameRef} /> <br/>
         <button type='button' className='link' onClick={handleSaveClick}>save</button>
+        <button type='button' className='link' onClick={handleRestartClick}>retry</button>
         <button type='button' className='link' onClick={handleCancelClick}>cancel</button>
     </div>;
 };

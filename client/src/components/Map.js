@@ -12,25 +12,32 @@ import {makePromiseFactory as makePromise} from "../helpers";
 
 const mapLoadedPromise = makePromise();
 
-const Map = ({sites, onSiteSelected, onMapMove, onNewSiteCancel}) => {
+const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=false}) => {
     const map = useRef(null);
     const container = useRef(null);
 
+    const [hasSiteMapLayers, setHasSiteMapLayers] = useState(false);
     const layerId = 'sites_from_db';
     const addSitesMapLayer = () => {
-        // map.current.addSource('tmphilite', {
-        //     type: 'geojson',
-        //     data: {
-        //         type: "FeatureCollection",
-        //         features: []
-        //     },
-        //     promoteId: 'id'
-        // });
-        // map.current.addLayer({
-        //     id: 'tmphilite',
-        //     type: 'line',
-        //     source: 'tmphilite',
-        // });
+        map.current.addSource('new_site_point', {
+            type: 'geojson',
+            data: {
+                type: "FeatureCollection",
+                features: []
+            }
+        });
+        map.current.addLayer({
+            id: 'new_site_point',
+            type: 'symbol',
+            source: 'new_site_point',
+            layout: {
+                "icon-image": "noun-map-pin-1058556",
+                "icon-offset": [0, -55],
+                "icon-size": 0.5,
+                "icon-rotate": -45,
+                "icon-allow-overlap": true
+            }
+        });
 
         map.current.addSource(layerId, {
             type: 'geojson',
@@ -141,6 +148,7 @@ const Map = ({sites, onSiteSelected, onMapMove, onNewSiteCancel}) => {
                 ]
             }
         });
+        setHasSiteMapLayers(true);
     };
 
     useEffect(() => {
@@ -214,8 +222,28 @@ const Map = ({sites, onSiteSelected, onMapMove, onNewSiteCancel}) => {
         setMapClickEvent(e);
     };
 
-    useEffect(() => { handleMapClick(); }, [mapClickEvent]);
-    const handleMapClick = () => {
+    const [newSitePoint, setNewSitePoint] = useState(null);
+    useEffect(() => {
+        if (!hasSiteMapLayers) {
+            return;
+        }
+
+        const data = !newSitePoint ? [] : [{
+            type: 'Feature',
+            properties: {},
+            geometry: {
+                type: 'Point',
+                coordinates: Object.values(map.current.unproject(newSitePoint))
+            }
+        }];
+
+        map.current.getSource('new_site_point').setData({
+            type: "FeatureCollection",
+            features: data
+        });
+    }, [newSitePoint, hasSiteMapLayers]);
+
+    useEffect(() => {
         if (!mapClickEvent) {
             return;
         }
@@ -224,17 +252,6 @@ const Map = ({sites, onSiteSelected, onMapMove, onNewSiteCancel}) => {
 
         // TEST the click hotspot by adding the precise rectangular buffer to see where the actual click is
         // const rectBuffer = makeRectangleBuffer(map.current, mapClickEvent.point, bufferAroundClick, true, false);
-        // map.current.getSource('tmphilite').setData({
-        //     type: "FeatureCollection",
-        //     features: [{
-        //         type: 'Feature',
-        //         properties: {},
-        //         geometry: {
-        //             type: 'Polygon',
-        //             coordinates: [rectBuffer]
-        //         }
-        //     }]
-        // });
 
         const features = map.current.queryRenderedFeatures(pointWithBuffer, {layers: [layerId, layerId+'__custom']});
 
@@ -247,14 +264,17 @@ const Map = ({sites, onSiteSelected, onMapMove, onNewSiteCancel}) => {
             map.current.setFeatureState({id: newCurrentSiteId, source: features[0].source}, {focus: true});
             map.current.setFeatureState({id: newCurrentSiteId, source: layerId+'__centers'}, {focus: true});
             onSiteSelected(newCurrentSiteId, mapClickEvent.point);
+            setNewSitePoint(false);
         } else {
-            if (isAddNewMode) {
+            if (isAddNewSite) {
                 onSiteSelected('new', mapClickEvent.point, map.current.unproject(mapClickEvent.point));
+                setNewSitePoint(mapClickEvent.point);
             } else {
                 onSiteSelected(false);
+                setNewSitePoint(false);
             }
         }
-    };
+    }, [mapClickEvent]);
 
     const [dragStart, setDragStart] = useState(null);
     const [dragEnd, setDragEnd] = useState(null);
@@ -272,14 +292,22 @@ const Map = ({sites, onSiteSelected, onMapMove, onNewSiteCancel}) => {
         onMapMove(dragDelta);
     }, [dragEnd]);
 
-    const [isAddNewMode, setAddNewMode] = useState(false);
-    const handleAddNewSite = () => {
-        // old state is ON => about to become OFF
-        if (isAddNewMode) {
-            onNewSiteCancel();
+    // if add-new mode is ON again (force-refreshed from ON to ON),
+    //   reset the new site location
+    // then only run usual site cancel if current add new mode is ON
+    useEffect(() => {
+        if (isAddNewSiteReset > 0) {
+            setNewSitePoint(false);
+            onSiteSelected(false);
         }
-        setAddNewMode(state => !state);
-    };
+    }, [isAddNewSiteReset]);
+
+    useEffect(() => {
+        if (!isAddNewSite) {
+            setNewSitePoint(false);
+            onSiteSelected(false);
+        }
+    }, [isAddNewSite]);
 
     const handleMapLoad = () => {
         addSitesMapLayer();
@@ -310,8 +338,7 @@ const Map = ({sites, onSiteSelected, onMapMove, onNewSiteCancel}) => {
     }, []);
 
     return (<div style={{width: '100%', height: '100%'}}>
-        <div style={{position: 'absolute', top: 5, left: 5, zIndex: 1000}}><button type={'button'} onClick={handleAddNewSite} className={'link'}>{isAddNewMode ? '(x) cancel new site':'(+) add new site'}</button></div>
-        <div ref={container} className={'map-container '+(isAddNewMode ? 'is-add-new-feature-mode':'')} style={{width: '100%', height: '100%'}}></div>
+        <div ref={container} className={'map-container '+(isAddNewSite ? 'is-add-new-feature-mode':'')} style={{width: '100%', height: '100%'}}></div>
     </div>);
 };
 
