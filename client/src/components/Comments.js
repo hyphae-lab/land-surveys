@@ -91,7 +91,7 @@ const Comments = ({site, comments, onCommentAdded, onCommentRemoved}) => {
         }
         {!isAddNew ?
             <div>
-                <button type='button' className='link' onClick={handleAddNewClick}>add commment</button>
+                <button type='button' className='link' onClick={handleAddNewClick}>add comment</button>
             </div> :
             <div>
                 <h4>New Comment</h4>
