@@ -12,14 +12,23 @@ import {makePromiseFactory as makePromise} from "../helpers";
 
 const mapLoadedPromise = makePromise();
 
+// create names of layers and layer data source with a suffix so it never can
+//   be in conflict with the mapbox style layers
+const layerSuffix = (Math.pow(16, 5) + (Math.pow(16, 5) - 1)).toString(16);
+const sitesPolygonLayerId = ['sites', 'polygon', layerSuffix].join('_');
+const sitesPointLayerId = ['sites', 'point', layerSuffix].join('_');
+const proposedSitesPointLayerId = ['proposed_sites', 'point', layerSuffix].join('_');
+const sitesLabelLayerId = ['sites', 'label', layerSuffix].join('_');
+const newProposedSitesPointLayerId = ['new_proposed_sites', 'point', layerSuffix].join('_');
+
 const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=false}) => {
     const map = useRef(null);
     const container = useRef(null);
 
     const [hasSiteMapLayers, setHasSiteMapLayers] = useState(false);
-    const layerId = 'sites_from_db';
+
     const addSitesMapLayer = () => {
-        map.current.addSource('new_site_point', {
+        map.current.addSource(newProposedSitesPointLayerId, {
             type: 'geojson',
             data: {
                 type: "FeatureCollection",
@@ -27,9 +36,9 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
             }
         });
         map.current.addLayer({
-            id: 'new_site_point',
+            id: newProposedSitesPointLayerId,
             type: 'symbol',
-            source: 'new_site_point',
+            source: newProposedSitesPointLayerId,
             layout: {
                 "icon-image": "noun-map-pin-1058556",
                 "icon-offset": [0, -55],
@@ -39,7 +48,7 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
             }
         });
 
-        map.current.addSource(layerId, {
+        map.current.addSource(sitesPolygonLayerId, {
             type: 'geojson',
             data: {
                 type: "FeatureCollection",
@@ -47,27 +56,10 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
             },
             promoteId: 'id'
         });
-        map.current.addSource(layerId+'__centers', {
-            type: 'geojson',
-            data: {
-                type: "FeatureCollection",
-                features: []
-            },
-            promoteId: 'id'
-        });
-        map.current.addSource(layerId+'__custom', {
-            type: 'geojson',
-            data: {
-                type: "FeatureCollection",
-                features: []
-            },
-            promoteId: 'id'
-        });
-
         map.current.addLayer({
-            id: layerId,
+            id: sitesPolygonLayerId,
             type: 'fill',
-            source: layerId,
+            source: sitesPolygonLayerId,
             paint: {
                 'fill-outline-color': [
                     'case',
@@ -89,11 +81,36 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
                 ]
             }
         });
-
+        map.current.addSource(sitesPointLayerId, {
+            type: 'geojson',
+            data: {
+                type: "FeatureCollection",
+                features: []
+            },
+            promoteId: 'id'
+        });
         map.current.addLayer({
-            id: layerId+'__custom',
+            id: sitesPointLayerId,
             type: 'circle',
-            source: layerId+'__custom',
+            source: sitesPointLayerId,
+            paint: {
+                "circle-color": ['case', ['boolean', ['feature-state', 'focus'], false], "red", "#4ad1f2"],
+                "circle-radius": 8
+            }
+        });
+
+        map.current.addSource(proposedSitesPointLayerId, {
+            type: 'geojson',
+            data: {
+                type: "FeatureCollection",
+                features: []
+            },
+            promoteId: 'id'
+        });
+        map.current.addLayer({
+            id: proposedSitesPointLayerId,
+            type: 'circle',
+            source: proposedSitesPointLayerId,
             paint: {
                 'circle-stroke-color': [
                     'case',
@@ -119,10 +136,19 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
 
         // need a separate layer for text, as some polygons are "multi-polygons"
         //   so Mapbox adds a label for each sub-polygon of the multi-polygon (duplicating)
+
+        map.current.addSource(sitesLabelLayerId, {
+            type: 'geojson',
+            data: {
+                type: "FeatureCollection",
+                features: []
+            },
+            promoteId: 'id'
+        });
         map.current.addLayer({
-            id: layerId+'__text',
+            id: sitesLabelLayerId,
             type: 'symbol',
-            source: layerId+'__centers',
+            source: sitesLabelLayerId,
             layout: {
                 'text-field': ["to-string", ["get", "name"]],
                 'text-anchor': 'bottom-right',
@@ -158,23 +184,39 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
     }, [sites]);
 
     const addSitesLayerData = () => {
-        const sitesData = {
+        const sitesPolygonData = {
             type: "FeatureCollection",
             features: []
         };
-        const sitesDataCustom = {
+        const sitesPointData = {
             type: "FeatureCollection",
             features: []
         };
-        const sitesDataCenters = {
+        const proposedSitesPointData = {
+            type: "FeatureCollection",
+            features: []
+        };
+        const sitesLabelData = {
             type: "FeatureCollection",
             features: []
         };
 
         Object.values(sites).forEach(site => {
             //console.log(site.id, site.name, turfCenter(turfPolygon(JSON.parse(site.coordinates)[0])));
-            if (!!site.is_user_defined) {
-                sitesDataCustom.features.push({
+            if (site.type === 'bus_stop') {
+                sitesPointData.features.push({
+                    type: "Feature",
+                    properties: {
+                        id: site.id,
+                        name: site.name+' (bus stop)',
+                    },
+                    geometry: {
+                        type: "Point",
+                        coordinates: JSON.parse(site.center)
+                    }
+                });
+            } else if (!!site.is_user_defined) {
+                proposedSitesPointData.features.push({
                     type: "Feature",
                     properties: {
                         id: site.id,
@@ -186,7 +228,7 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
                     }
                 });
             } else {
-                sitesData.features.push({
+                sitesPolygonData.features.push({
                     type: "Feature",
                     properties: {
                         id: site.id,
@@ -199,11 +241,11 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
                 });
             }
 
-            sitesDataCenters.features.push({
+            sitesLabelData.features.push({
                 type: "Feature",
                 properties: {
                     id: site.id,
-                    name: site.name,
+                    name: site.name + (site.type==='bus_stop' ? ' (bus stop)':''),
                 },
                 geometry: {
                     type: "Point",
@@ -212,9 +254,10 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
             });
         });
 
-        map.current.getSource(layerId).setData(sitesData);
-        map.current.getSource(layerId+'__custom').setData(sitesDataCustom);
-        map.current.getSource(layerId+'__centers').setData(sitesDataCenters);
+        map.current.getSource(sitesPolygonLayerId).setData(sitesPolygonData);
+        map.current.getSource(sitesPointLayerId).setData(sitesPointData);
+        map.current.getSource(proposedSitesPointLayerId).setData(proposedSitesPointData);
+        map.current.getSource(sitesLabelLayerId).setData(sitesLabelData);
     }
 
     const [mapClickEvent, setMapClickEvent] = useState(null);
@@ -237,7 +280,7 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
             }
         }];
 
-        map.current.getSource('new_site_point').setData({
+        map.current.getSource(newProposedSitesPointLayerId).setData({
             type: "FeatureCollection",
             features: data
         });
@@ -253,16 +296,17 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
         // TEST the click hotspot by adding the precise rectangular buffer to see where the actual click is
         // const rectBuffer = makeRectangleBuffer(map.current, mapClickEvent.point, bufferAroundClick, true, false);
 
-        const features = map.current.queryRenderedFeatures(pointWithBuffer, {layers: [layerId, layerId+'__custom']});
+        const features = map.current.queryRenderedFeatures(pointWithBuffer, {layers: [sitesPolygonLayerId, sitesPointLayerId, proposedSitesPointLayerId]});
 
-        map.current.removeFeatureState({source: layerId});
-        map.current.removeFeatureState({source: layerId+'__custom'});
-        map.current.removeFeatureState({source: layerId+'__centers'});
+        map.current.removeFeatureState({source: sitesPolygonLayerId});
+        map.current.removeFeatureState({source: sitesPointLayerId});
+        map.current.removeFeatureState({source: proposedSitesPointLayerId});
+        map.current.removeFeatureState({source: sitesLabelLayerId});
 
         if (features.length) {
             const newCurrentSiteId = features[0].id;
             map.current.setFeatureState({id: newCurrentSiteId, source: features[0].source}, {focus: true});
-            map.current.setFeatureState({id: newCurrentSiteId, source: layerId+'__centers'}, {focus: true});
+            map.current.setFeatureState({id: newCurrentSiteId, source: sitesLabelLayerId}, {focus: true});
             onSiteSelected(newCurrentSiteId, mapClickEvent.point);
             setNewSitePoint(false);
         } else {

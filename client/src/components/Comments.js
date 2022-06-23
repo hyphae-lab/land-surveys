@@ -81,7 +81,7 @@ const Comments = ({site, comments, onCommentAdded, onCommentRemoved}) => {
     }
 
     return <div>
-        <h3>{site.name} Comments</h3>
+        <h3>{site.name} {site.type==='bus_stop' && '(bus stop)'} Comments</h3>
         {!comments || !comments.length ?
             <div>no comments</div> :
             comments.map(comment => <div key={comment.id}>
