@@ -187,14 +187,14 @@ const Survey = () => {
         {isLoading && <div className='spinning-loader'></div>}
         {!!error && <div>{error}</div>}
         {firebaseApp.showAuth && authUser && <ImportData />}
-        <div style={{width: '90%', height: '90vh', position: 'relative'}}>
+        <div style={{width: '100%', height: '90vh', position: 'relative'}}>
             {sites && <React.Fragment>
                 <div style={{position: 'absolute', top: 5, left: 5, zIndex: 1000}}>
                     <button type={'button'} onClick={() => setIsAddNewSite(s => !s)} className={'link'}>
                         {isAddNewSite ? '(x) cancel new site':'(+) add new site'}
                     </button>
                 </div>
-                <Map sites={sites} onSiteSelected={handleSiteSelected} onMapMove={handleMapMoved} isAddNewSite={isAddNewSite} isAddNewSiteReset={isAddNewSiteReset} />}
+                <Map sites={sites} onSiteSelected={handleSiteSelected} onMapMove={handleMapMoved} isAddNewSite={isAddNewSite} isAddNewSiteReset={isAddNewSiteReset} />
             </React.Fragment>}
             {currentSite && !isCurrentSiteNew &&
                 <div style={{
