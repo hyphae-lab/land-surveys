@@ -24,12 +24,8 @@ import './style.css';
 const App = () => {
     const [showAuth] = useState(firebaseApp.showAuth);
     return <FirebaseContext.Provider value={firebaseApp}>
-        <div className='app'>
-            {showAuth && <AuthUI />}
-            <main>
-                <Survey />
-            </main>
-        </div>
+        {showAuth && <AuthUI />}
+        <Survey />
     </FirebaseContext.Provider>;
 };
 
