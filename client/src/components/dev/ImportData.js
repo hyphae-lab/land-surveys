@@ -30,12 +30,24 @@ const ImportData = () => {
             const sitesPromises = [];
             const sitesRef = collection(firebaseApp.db, 'survey_sites');
             sitesObj.features.forEach(feature => {
-                const sitePromise = addDoc(sitesRef, {
+                const data = {
                     is_user_defined: false,
-                    coordinates: JSON.stringify(feature.geometry.coordinates),
-                    center: feature.properties.center,
                     name: feature.properties.name
-                });
+                }
+                if (feature.geometry.type === 'MultiPolygon') {
+                    data.coordinates = JSON.stringify(feature.geometry.coordinates);
+                    data.center = feature.properties.center;
+                } else if (feature.geometry.type === 'Point') {
+                    data.center = JSON.stringify(feature.geometry.coordinates);
+                }
+                if (feature.properties.type) {
+                    data.type = feature.properties.type;
+                }
+                if (feature.properties.is_user_defined) {
+                    data.is_user_defined = feature.properties.is_user_defined;
+                }
+
+                const sitePromise = addDoc(sitesRef, data);
                 sitesPromises.push(sitePromise);
             });
             Promise.all(sitesPromises).then(res => {
