@@ -318,6 +318,7 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
         if (!map.current) {
             map.current = new mapboxgl.Map({
                 container: container.current,
+                cooperativeGestures: true,
                 style: 'mapbox://styles/hyphae-lab/cl4ekvfdg000015npvrzwo7fu'
             });
             map.current.on('load', handleMapLoad);
