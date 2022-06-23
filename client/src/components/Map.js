@@ -79,13 +79,13 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
                     'case',
                     ['boolean', ['feature-state', 'focus'], false],
                     'red',
-                    'magenta'
+                    '#4f4af2'
                 ],
                 'fill-opacity': [
                     'case',
                     ['boolean', ['feature-state', 'focus'], false],
-                    0.7,
-                    0.3
+                    0.8,
+                    0.7
                 ]
             }
         });
@@ -105,13 +105,13 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
                     'case',
                     ['boolean', ['feature-state', 'focus'], false],
                     'red',
-                    'magenta'
+                    '#4f4af2'
                 ],
                 'circle-opacity': [
                     'case',
                     ['boolean', ['feature-state', 'focus'], false],
-                    0.7,
-                    0.3
+                    0.8,
+                    0.7
                 ],
                 'circle-radius': 10
             }
