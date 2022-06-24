@@ -7,7 +7,8 @@ const NewSite = ({add, restart, cancel, site}) => {
     const handleSaveClick = () => {
         add({
             ...site,
-            name: nameRef.current.value
+            name: nameRef.current.value,
+            added_time: new Date()
         });
     };
 
