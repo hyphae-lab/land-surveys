@@ -21,7 +21,7 @@ const NewSite = ({add, restart, cancel, site}) => {
         restart();
     };
 
-    return <div>
+    return <div className={'popup'}>
         <h3>New Site</h3>
         <input ref={nameRef} /> <br/>
         <button type='button' className='link' onClick={handleSaveClick}>save</button>

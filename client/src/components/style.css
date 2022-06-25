@@ -2,22 +2,22 @@
 /*    margin: 0;*/
 /*    box-sizing: border-box;*/
 /*}*/
+div.popup {
+    margin: 2px;
+    padding: 1px;
+}
+div.popup div {
+    margin-left: 5px;
+}
 
-/*div, p {*/
-/*    margin: 2px 0;*/
-/*    padding: 1px;*/
-/*}*/
-/*span, div, p {*/
-/*    font-family: Verdana, sans-serif;*/
-/*}*/
-/*div div {*/
-/*    margin-left: 5px;*/
-/*}*/
-
-/*h1, h2, h3, h4, h5 {*/
-/*    margin: 5px 0;*/
-/*    padding: 1px;*/
-/*}*/
+div.popup h1,
+div.popup h2,
+div.popup h3,
+div.popup h4,
+div.popup h5 {
+    margin: 5px 0;
+    padding: 1px;
+}
 
 .text-length-measurable {
     display: inline-block;

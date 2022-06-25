@@ -80,7 +80,7 @@ const Comments = ({site, comments, onCommentAdded, onCommentRemoved}) => {
             });
     }
 
-    return <div>
+    return <div className={'popup'}>
         <h3>{site.name} {site.type==='bus_stop' && '(bus stop)'} Comments</h3>
         {!comments || !comments.length ?
             <div>no comments</div> :
