@@ -1,21 +1,22 @@
 import React, { useRef, useState, useEffect, useContext } from 'react';
 import Map from "./Map";
+import Popup from './Popup';
 import Comments from "./Comments";
 import NewSite from "./NewSite";
-import ImportData from "./dev/ImportData"; // dev
-// import ImportData from "./dev/Empty"; // prod
+// import ImportData from "./dev/ImportData"; // dev
+import ImportData from "./dev/Empty"; // prod
 
 import {FirebaseContext} from "./firebaseContext";
 import {
     collection,
     doc,
     getDocs,
-    getDoc,
-    deleteDoc,
+    // getDoc,
+    // deleteDoc,
     updateDoc,
     addDoc,
-    query,
-    where
+    // query,
+    // where
 } from 'firebase/firestore';
 
 import {onAuthStateChanged} from "firebase/auth";
@@ -41,8 +42,6 @@ const Survey = () => {
     const [currentSite, setCurrentSite] = useState(false);
     const [isCurrentSiteNew, setCurrentSiteNew] = useState(false);
     const [currentSiteComments, setCurrentSiteComments] = useState(false);
-    const [currentSiteClickPosition, setCurrentSiteClickPosition] = useState(false);
-    const [currentSiteClickPositionDelta, setCurrentSiteClickPositionDelta] = useState(false);
 
     const getSitesAndComments = () => {
         setLoading(true);
@@ -131,10 +130,9 @@ const Survey = () => {
         setIsAddNewSiteReset(s => s+1);
     };
 
-    const handleSiteSelected = (siteId, clickPosition, coordinates=null) => {
+    const handleSiteSelected = (siteId, coordinates=null) => {
         if (!siteId) {
             setCurrentSite(false);
-            setCurrentSiteClickPosition(false);
         } else {
             if (siteId === 'new') {
                 setCurrentSiteNew(true);
@@ -145,19 +143,8 @@ const Survey = () => {
                 setCurrentSite(sites[siteId]);
                 setCurrentSiteComments(comments[siteId]);
             }
-            setCurrentSiteClickPosition(clickPosition);
         }
     };
-
-    const handleMapMoved = (delta) => {
-        setCurrentSiteClickPositionDelta(delta);
-    };
-
-    useEffect(() => {
-        if (currentSite) {
-            setCurrentSiteClickPosition({x: currentSiteClickPosition.x - currentSiteClickPositionDelta.x, y: currentSiteClickPosition.y - currentSiteClickPositionDelta.y});
-        }
-    }, [currentSiteClickPositionDelta]);
 
     const handleCommentAdded = comment => {
         // update comment_count for site
@@ -194,24 +181,16 @@ const Survey = () => {
                         {isAddNewSite ? '(x) cancel new site':'(+) add new site'}
                     </button>
                 </div>
-                <Map sites={sites} onSiteSelected={handleSiteSelected} onMapMove={handleMapMoved} isAddNewSite={isAddNewSite} isAddNewSiteReset={isAddNewSiteReset} />
+                <Map sites={sites} onSiteSelected={handleSiteSelected} isAddNewSite={isAddNewSite} isAddNewSiteReset={isAddNewSiteReset} />
             </React.Fragment>}
             {currentSite && !isCurrentSiteNew &&
-                <div style={{
-                    position: 'absolute', backgroundColor: 'white', border: '1px solid grey',
-                    maxHeight: '65%', overflowY: 'scroll',
-                    top: (currentSiteClickPosition.y+15)+'px', left: currentSiteClickPosition.x+'px'
-                }}>
+                <Popup>
                     <Comments site={currentSite} comments={currentSiteComments} onCommentAdded={handleCommentAdded} onCommentRemoved={handleCommentRemoved}/>
-                </div>}
+                </Popup>}
             {currentSite && isCurrentSiteNew &&
-                <div style={{
-                    position: 'absolute', backgroundColor: 'white', border: '1px solid grey',
-                    maxHeight: '65%', overflowY: 'scroll',
-                    top: (currentSiteClickPosition.y+15)+'px', left: currentSiteClickPosition.x+'px'
-                    }}>
+                <Popup>
                     <NewSite add={addNewSite} restart={restartNewSite} cancel={cancelNewSite} site={currentSite} />
-                </div>}
+                </Popup>}
         </div>
     </div>
 };

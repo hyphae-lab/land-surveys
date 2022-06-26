@@ -21,7 +21,7 @@ const proposedSitesPointLayerId = ['proposed_sites', 'point', layerSuffix].join(
 const sitesLabelLayerId = ['sites', 'label', layerSuffix].join('_');
 const newProposedSitesPointLayerId = ['new_proposed_sites', 'point', layerSuffix].join('_');
 
-const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=false}) => {
+const Map = ({sites, onSiteSelected, isAddNewSiteReset, isAddNewSite=false}) => {
     const map = useRef(null);
     const container = useRef(null);
 
@@ -276,7 +276,7 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
             properties: {},
             geometry: {
                 type: 'Point',
-                coordinates: Object.values(map.current.unproject(newSitePoint))
+                coordinates: newSitePoint.toArray()
             }
         }];
 
@@ -285,6 +285,17 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
             features: data
         });
     }, [newSitePoint, hasSiteMapLayers]);
+
+    // lng-lat point of last click that either was at
+    //   an existing geometry on map or
+    //   a new geom to add
+    const [clickPoint, setClickPoint] = useState(null);
+    useEffect(() => {
+        if (!clickPoint) {
+            return;
+        }
+        map.current.flyTo({center: clickPoint.toArray(), screenSpeed: .4});
+    }, [clickPoint]);
 
     useEffect(() => {
         if (!mapClickEvent) {
@@ -307,34 +318,21 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
             const newCurrentSiteId = features[0].id;
             map.current.setFeatureState({id: newCurrentSiteId, source: features[0].source}, {focus: true});
             map.current.setFeatureState({id: newCurrentSiteId, source: sitesLabelLayerId}, {focus: true});
-            onSiteSelected(newCurrentSiteId, mapClickEvent.point);
+            onSiteSelected(newCurrentSiteId);
             setNewSitePoint(false);
+            setClickPoint(map.current.unproject(mapClickEvent.point));
         } else {
             if (isAddNewSite) {
-                onSiteSelected('new', mapClickEvent.point, map.current.unproject(mapClickEvent.point));
-                setNewSitePoint(mapClickEvent.point);
+                const clickLngLat = map.current.unproject(mapClickEvent.point);
+                onSiteSelected('new', clickLngLat);
+                setNewSitePoint(clickLngLat);
+                setClickPoint(clickLngLat);
             } else {
                 onSiteSelected(false);
                 setNewSitePoint(false);
             }
         }
     }, [mapClickEvent]);
-
-    const [dragStart, setDragStart] = useState(null);
-    const [dragEnd, setDragEnd] = useState(null);
-    const handleMapDragStart = (e) => {
-        setDragStart({x: e.originalEvent.x, y: e.originalEvent.y});
-    };
-    const handleMapDragEnd = (e) => {
-        setDragEnd({x: e.originalEvent.x, y: e.originalEvent.y});
-    };
-    useEffect(() => {
-        if (!dragStart) {
-            return;
-        }
-        const dragDelta = {x: dragStart.x - dragEnd.x, y: dragStart.y - dragEnd.y};
-        onMapMove(dragDelta);
-    }, [dragEnd]);
 
     // if add-new mode is ON again (force-refreshed from ON to ON),
     //   reset the new site location
@@ -367,8 +365,6 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
             });
             map.current.on('load', handleMapLoad);
             map.current.on('click', handleMapClickWrapper);
-            map.current.on('dragstart', handleMapDragStart);
-            map.current.on('dragend', handleMapDragEnd);
         }
 
         return () => {
@@ -376,8 +372,6 @@ const Map = ({sites, onSiteSelected, onMapMove, isAddNewSiteReset, isAddNewSite=
                 mapLoadedPromise.reject(false);
                 map.current.off('load', handleMapLoad);
                 map.current.off('click', handleMapClickWrapper);
-                map.current.off('dragstart', handleMapDragStart);
-                map.current.off('dragend', handleMapDragEnd);
             }
         };
     }, []);
