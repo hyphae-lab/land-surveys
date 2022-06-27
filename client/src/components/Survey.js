@@ -111,6 +111,7 @@ const Survey = () => {
                 setSites({...sites, [site.id]: site});
                 setCurrentSiteNew(false);
                 setCurrentSite(site);
+                setIsAddNewSite(false);
             })
             .catch(error => {
                 setError('Site update error ' + error.message);
