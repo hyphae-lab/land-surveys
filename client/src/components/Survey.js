@@ -178,7 +178,7 @@ const Survey = () => {
         <div style={{width: '100%', height: '90vh', position: 'relative'}}>
             {sites && <React.Fragment>
                 <div style={{position: 'absolute', top: 5, left: 5, zIndex: 1000}}>
-                    <button type={'button'} onClick={() => setIsAddNewSite(s => !s)} className={'link'}>
+                    <button type={'button'} onClick={() => setIsAddNewSite(s => !s)} className='link cta'>
                         {isAddNewSite ? '(x) cancel new site':'(+) add new site'}
                     </button>
                 </div>

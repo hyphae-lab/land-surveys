@@ -43,6 +43,10 @@ button.link, .button-link {
     font-size: inherit;
     height: 25px;
 }
+button.link.cta, .button-link.cta {
+    background-color: #fab97d;
+    border-radius: 5px;
+}
 button.link[disabled] {
     cursor: not-allowed;
     text-decoration: none;
@@ -53,6 +57,9 @@ button.link:hover, button.link[disabled], .button-link:hover {
     background-color: lightgrey;
     border: 1px solid lightgrey;
     border-radius: 5px;
+}
+button.link.cta:hover, .button-link.cta:hover {
+    background-color: #fa947d;
 }
 button.link:focus, .button-link:focus {
     top: 1px;
